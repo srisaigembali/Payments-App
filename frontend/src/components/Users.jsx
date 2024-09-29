@@ -2,6 +2,21 @@ import React, { useEffect, useState } from "react";
 import User from "./User";
 import axios from "axios";
 
+const useDebounce = (value, timeout) => {
+	const [debouncedValue, setDebouncedValue] = useState(value);
+	useEffect(() => {
+		let timeoutNumber = setTimeout(() => {
+			setDebouncedValue(value);
+		}, timeout);
+
+		return () => {
+			clearTimeout(timeoutNumber);
+		};
+	}, [value]);
+
+	return debouncedValue;
+};
+
 const Users = () => {
 	const [users, setUsers] = useState([
 		{
@@ -11,14 +26,15 @@ const Users = () => {
 		},
 	]);
 	const [filter, setFilter] = useState("");
+	const debouncedValue = useDebounce(filter, 500);
 
 	useEffect(() => {
 		axios
-			.get("http://localhost:3000/api/v1/user/bulk?filter=" + filter)
+			.get("http://localhost:3000/api/v1/user/bulk?filter=" + debouncedValue)
 			.then((response) => {
 				setUsers(response.data.users);
 			});
-	}, [filter]);
+	}, [debouncedValue]);
 
 	return (
 		<>
